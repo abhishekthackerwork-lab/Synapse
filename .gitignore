@@ -1,0 +1,32 @@
+# -----------------------------
+# Ignore everything by default
+# -----------------------------
+*
+
+# -----------------------------
+# Allow app source code ONLY
+# -----------------------------
+!app/
+!app/**
+
+# -----------------------------
+# Allow repo essentials
+# -----------------------------
+!.gitignore
+!README.md
+!docker-compose.yml
+!Dockerfile
+!.env.example
+
+# -----------------------------
+# Explicit safety ignores
+# -----------------------------
+alembic/
+.env*
+vault/
+vault-config/
+postgres_data/
+qdrant_data/
+__pycache__/
+*.pyc
+*.log

@@ -1,0 +1,97 @@
+
+services:
+  # ------------------------------------------------------------
+  # 1. API SERVICE (FastAPI + Async SQLAlchemy)
+  # ------------------------------------------------------------
+  api:
+    build: .
+    container_name: synapse_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      # Vault Access
+      VAULT_ADDR: https://vault:8200
+      VAULT_ROLE_ID: ${VAULT_ROLE_ID}
+      VAULT_SECRET_ID: ${VAULT_SECRET_ID}
+
+    depends_on:
+      - db
+      - vector_db
+      - redis
+      - vault
+
+  # ------------------------------------------------------------
+  # 2. POSTGRES (Relational Database)
+  # ------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: synapse_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# ------------------------------------------------------------
+# 3. QDRANT (Vector DB)
+# ------------------------------------------------------------
+  vector_db:
+    image: qdrant/qdrant:latest
+    container_name: synapse_qdrant
+    restart: always
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC (optional but recommended)
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 2s
+      retries: 12
+
+  # ------------------------------------------------------------
+  # 4. REDIS CACHE
+  # ------------------------------------------------------------
+  redis:
+    image: redis:alpine
+    container_name: synapse_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # ------------------------------------------------------------
+  # 5. HASHICORP VAULT (LOCAL DEV MODE)
+  # ------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: synapse_vault
+    restart: always
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/data
+      - ./vault-config:/vault/config
+      - ./vault/certs:/vault/certs:ro
+    command: [ "vault", "server", "-config=/vault/config/vault.hcl" ]
+
+
+
+# ------------------------------------------------------------
+# VOLUMES
+# ------------------------------------------------------------
+volumes:
+  postgres_data:
+  qdrant_data:
+  vault_data:
