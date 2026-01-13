@@ -28,6 +28,11 @@ async def init_db_engine():
             pool_pre_ping=True,
             future=True,
             echo=False,
+            connect_args={
+                "server_settings": {
+                    "search_path": "app,public"
+                }
+            },
         )
 
         AsyncSessionLocal = sessionmaker(

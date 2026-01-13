@@ -8,8 +8,10 @@ from datetime import datetime, timedelta, UTC
 
 def _vault_http_client():
     return httpx.AsyncClient(
-        verify=False,  # dev only: self-signed Vault cert
+        # Remove verify=False as it's not needed for HTTP
         timeout=10.0,
+        # Ensure we are sending valid JSON
+        headers={"Content-Type": "application/json"}
     )
 
 
@@ -21,6 +23,7 @@ class VaultClient:
         self.client_token = None
 
     async def authenticate(self):
+
         async with _vault_http_client() as client:
             resp = await client.post(
                 f"{self.vault_addr}/v1/auth/approle/login",

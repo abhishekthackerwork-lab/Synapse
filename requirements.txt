@@ -1,0 +1,49 @@
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Database + ORM
+sqlalchemy>=2.0.25
+asyncpg>=0.29.0
+
+# Pydantic v2
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+
+# Security
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+email-validator>=2.1.0
+argon2-cffi>=23.1.0
+
+# Crypto for AES encryption
+cryptography>=41.0.7
+
+# File uploads
+python-multipart>=0.0.9
+
+# Vector DB
+qdrant-client>=1.7.0
+
+# Caching
+redis>=5.0.1
+
+# HTTP Client
+httpx>=0.26.0
+
+# Allembic migrations
+alembic>=1.17.2
+
+# for vault communication
+httpx==0.28.1
+
+# Document ingestion dependencies
+pypdf>=3.17.0
+python-docx>=0.8.11
+python-pptx>=0.6.21
+Pillow>=10.0.0
+pytesseract>=0.3.10
+pdf2image>=1.17.0
+sentence-transformers>=2.2.2
+
+# google genai
+google-genai==1.55.0

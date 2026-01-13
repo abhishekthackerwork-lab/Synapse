@@ -17,6 +17,7 @@
 !docker-compose.yml
 !Dockerfile
 !.env.example
+!requirements.txt
 
 # -----------------------------
 # Explicit safety ignores
