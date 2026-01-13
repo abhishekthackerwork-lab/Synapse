@@ -47,7 +47,7 @@ Built with the principle of least exposure, leveraging **HashiCorp Vault** for a
 - **Database**: PostgreSQL (async SQLAlchemy 2.0 + Alembic)
 - **Secrets Management**: HashiCorp Vault (KV v2, AppRole, Transit)
 - **Vector Database**: Qdrant
-- **AI Integration**: Google Gemini 3.0 (Thinking) & 2.5 Flash (Tooling)
+- **AI Integration**: Google Gemini 3.0, Google Genai Python Sdk
 - **Security**: Argon2id (Hashing), JWT (Vault-signed)
 - **Runtime**: Docker-based local development
 
