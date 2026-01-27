@@ -60,4 +60,4 @@ Synapse showcases proficiency in modern backend engineering:
 - **System Boundaries:** PostgreSQL remains the authoritative source of truth, while Qdrant is treated as a **derived vector index**, keeping the core data model decoupled from the vector representation.
 
 ## License
-Provided for educational and portfolio purposes.
+MIT LICENSE
