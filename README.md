@@ -28,10 +28,10 @@ Built with the principle of least exposure, leveraging **HashiCorp Vault** for a
 
 ## 🏗️ Architectural Decisions
 
-### Database Lease Management
+### Database Management
 - **Implementation:** Vault revokes database credentials frequently to maintain a high security posture. 
 - **Production Improvement:** In a high-scale environment, this would be further improved such that the database lease is automatically renewed when approaching expiration. This ensures that long-running LLM reasoning chains or complex database operations are never left unfinished, while maintaining strict security boundaries.
-
+- **Nested Session:** I implemented SQLAlchemy nested sessions (SAVEPOINTS) to wrap LLM tool calls. This ensures that if a tool execution fails—due to incorrect LLM parameters or external API issues—only that specific sub-transaction is rolled back. This prevents a single AI hallucination from crashing the main database transaction, allowing the system to still log the error and save the chat history successfully 
 
 
 ### Contextual Session & History
