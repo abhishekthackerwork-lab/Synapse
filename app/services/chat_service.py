@@ -39,19 +39,17 @@ async def chat_service(
     status = ChatStatus.PENDING
 
     message = payload.message
-    if payload.conversation_id:
-        stmt = select(
-            exists().where(
-                ChatMessage.conversation_id == payload.conversation_id,
-                ChatMessage.user_id == user_id
-            )
-        )
-        result = await session.execute(stmt)
-        existing_owner = result.scalar_one_or_none()
 
-        # Security Risk: If the ID exists but belongs to another user
-        if existing_owner and existing_owner != user_id:
-            raise HTTPException(status_code=403, detail="Unauthorized access to chat history.")
+    if payload.conversation_id:
+        # Check if the conversation exists AND belongs to someone else
+        stmt = select(ChatMessage.user_id).where(
+            ChatMessage.conversation_id == payload.conversation_id
+        ).limit(1)
+        result = await session.execute(stmt)
+        owner_id = result.scalar()
+
+        if owner_id and owner_id != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized access.")
 
         # 2. Assign or Generate the ID
     conv_id = payload.conversation_id or uuid4()
@@ -156,7 +154,7 @@ async def chat_service(
             await session.commit()
 
         except Exception as db_exc:
-            print(f"DEBUG: Database failed but moving on: {db_exc}")
+            print(f"DEBUG: Database failed {db_exc}")
             await session.rollback()
 
     return return_payload

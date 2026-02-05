@@ -18,6 +18,8 @@
 !Dockerfile
 !.env.example
 !requirements.txt
+!SETUP.md
+!app-policy.hcl
 
 # -----------------------------
 # Explicit safety ignores

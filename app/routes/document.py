@@ -14,6 +14,7 @@ from app.services.qdrant_mapping import get_or_create_qdrant_user_id
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
+# these endpoints are used strictly for testing purposes where upload and search pipelines are tested independently.
 
 @router.post("/upload")
 async def upload_document(

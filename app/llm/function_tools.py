@@ -205,30 +205,35 @@ async def list_tasks(
         ],
     }
 
+
 async def manage_task(
-    *,
-    args: ManageTaskArgs,
-    user_id: UUID,
-    session: AsyncSession,
+        *,
+        args: ManageTaskArgs,
+        user_id: UUID,
+        session: AsyncSession,
 ) -> dict:
-    # DEBUG LOGGING
-    print(
-        f"[DEBUG] manage_task dispatcher called. Action='{args.action}' | Title='{args.title}' | Deadline='{args.deadline}'")
+    print(f"[DEBUG] manage_task dispatcher called. Action='{args.action}'")
 
     try:
-        if args.action == "create":
-            return await create_task(args=args, user_id=user_id, session=session)
+        # Create a SAVEPOINT
+        async with session.begin_nested():
+            if args.action == "create":
+                return await create_task(args=args, user_id=user_id, session=session)
+            if args.action == "update":
+                return await update_task(args=args, user_id=user_id, session=session)
+            if args.action == "delete":
+                return await delete_task(args=args, user_id=user_id, session=session)
+            if args.action == "list":
+                return await list_tasks(args=args, user_id=user_id, session=session)
 
-        if args.action == "update":
-            return await update_task(args=args, user_id=user_id, session=session)
+            raise ToolExecutionError(f"Unsupported action: {args.action}")
 
-        if args.action == "delete":
-            return await delete_task(args=args, user_id=user_id, session=session)
+    except Exception as e:
+        # Because we used 'async with session.begin_nested()',
+        # any exception here automatically rolls back to the SAVEPOINT.
+        # The outer session remains active and valid!
+        print(f"[ERROR] Task tool failed: {e}")
 
-        if args.action == "list":
-            return await list_tasks(args=args, user_id=user_id, session=session)
-
-        raise ToolExecutionError(f"Unsupported action: {args.action}")
-    except ToolExecutionError:
-        await session.rollback()
-        raise
+        # We re-raise or return a failure dict so the LLM/Chat service
+        # knows the tool failed, but the DB connection is still healthy.
+        raise ToolExecutionError(f"Task operation failed: {str(e)}")
