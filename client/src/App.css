@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1. Global Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Ensure the app takes up the full screen height and width */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  /* 3. The specific fix for the horizontal bar */
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* 4. Fix for iOS/Mobile momentum scrolling */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

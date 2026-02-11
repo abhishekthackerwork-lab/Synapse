@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, asc, desc, func
 from sqlalchemy import exists
 
 from app.db.models.chat import ChatMessage, ChatStatus
@@ -159,6 +159,65 @@ async def chat_service(
 
     return return_payload
 
+
+async def get_conversation_list_service(
+    session: AsyncSession,
+    user_id: UUID,
+):
+    # use a window function to find the first message for every conversation
+    # this ensures we get original prompt to create the title
+
+    subq = (
+        select(
+            ChatMessage.conversation_id,
+            ChatMessage.user_message,
+            ChatMessage.created_at,
+            func.row_number().over(
+                partition_by=ChatMessage.conversation_id,
+                order_by=ChatMessage.created_at.asc()
+            ).label("rn")
+        )
+        .where(ChatMessage.user_id == user_id)
+        .subquery()
+    )
+
+    stmt = (
+        select(subq.c.conversation_id, subq.c.user_message, subq.c.created_at)
+        .where(subq.c.rn == 1)
+        .order_by(desc(subq.c.created_at))
+    )
+
+    result = await session.execute(stmt)
+    rows = result.all()
+
+    return [
+        {
+            "conversation_id": row.conversation_id,
+            "title": " ".join(row.user_message.split()[:4]) + "...",
+            "created_at": row.created_at,
+        } for row in rows
+    ]
+
+async def get_conversation_history_service(
+    session: AsyncSession,
+    user_id: UUID,
+    conversation_id: UUID,
+):
+    stmt = (
+        select(ChatMessage)
+        .where(
+            ChatMessage.conversation_id == conversation_id,
+            ChatMessage.user_id == user_id,
+        )
+        .order_by(asc(ChatMessage.created_at))
+    )
+
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+'''
+Helper function
+'''
 def validate_file(files: Optional[List[UploadFile]]):
     for file in files:
         ext = Path(file.filename).suffix.lower()

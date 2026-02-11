@@ -29,7 +29,7 @@ async def get_gemini_client() -> genai.Client:
     _gemini_client = None
     _gemini_expiry = 0.0
 
-    # Fetch LLM secret (KV v1)
+    # Fetch LLM secret (KV v2)
     secret = await vault_client.read_kv_secret("llm/google_genai")
 
     api_key = secret.get("value")

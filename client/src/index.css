@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Pointing specifically to the sibling folders inside /src */
+@source "./pages/**/*.{ts,tsx}";
+@source "./components/**/*.{ts,tsx}";
+@source "./App.tsx";
+
+@layer base {
+  html, body, #root {
+    height: 100%; /* More flexible than 100vh for long pages */
+    width: 100%;  /* FIX: Use % instead of vw to prevent horizontal overflow */
+    margin: 0;
+    padding: 0;
+    background-color: #020617;
+    overflow-x: hidden; /* Safety net */
+  }
+}

@@ -20,7 +20,7 @@ class GeminiManager:
     Client lifecycle, TTL, and secret handling are managed elsewhere.
     """
 
-    def __init__(self, model_name: str = "gemini-3-flash-preview"):
+    def __init__(self, model_name: str = "gemini-2.5-flash"):
         self.model_name = model_name
 
     async def generate_response(
@@ -54,11 +54,24 @@ class GeminiManager:
                 )
                 contents.append(types.Content(role="user", parts=[types.Part(text=prompt_text)]))
 
+                # --- SANITIZER BLOCK: Enforce strict role alternation ---
+                sanitized_contents = []
+                for turn in contents:
+                    if not turn.parts:
+                        continue  # Skip empty turns which also trigger 400 errors
+
+                    # If the last role is the same as the current one, merge them
+                    if sanitized_contents and sanitized_contents[-1].role == turn.role:
+                        sanitized_contents[-1].parts.extend(turn.parts)
+                    else:
+                        sanitized_contents.append(turn)
+                # ---------------------------------------------------------
+
                 # --- Agentic Multi-turn Loop ---
                 for turn in range(max_turns):
                     response = await client.aio.models.generate_content(
                         model=self.model_name,
-                        contents=contents,
+                        contents=sanitized_contents,
                         config=config,
                     )
 
@@ -97,9 +110,8 @@ class GeminiManager:
                         })
 
                         # Update history for the next turn
-                        # We must append the Model's turn (with signature/call) AND the Tool response
-                        contents.append(candidate.content)
-                        contents.append(types.Content(
+                        sanitized_contents.append(candidate.content)
+                        sanitized_contents.append(types.Content(
                             role="tool",
                             parts=[types.Part(
                                 function_response=types.FunctionResponse(
@@ -186,40 +198,36 @@ class GeminiManager:
             session: AsyncSession,
             use_dummy_signatures: bool = False
     ) -> List[types.Content]:
-        """Autonomous history fetcher with built-in empty-state handling."""
         history = []
 
-        # 1. Fetch messages
         stmt = (
             select(ChatMessage)
             .where(ChatMessage.conversation_id == conversation_id)
-            .order_by(ChatMessage.created_at.asc())  # Using .timestamp as per your update
+            .order_by(ChatMessage.created_at.asc())
         )
         result = await session.execute(stmt)
         db_messages = result.scalars().all()
 
-        # If db_messages is empty, the loop just won't run,
-        # and we naturally return the empty history list.
         for msg in db_messages:
-            # A. User turn
+            # 1. USER TURN
             history.append(types.Content(role="user", parts=[types.Part(text=msg.user_message)]))
 
-            # B. Intermediate Tool Trace (if any)
-            if msg.tool_trace:
-                if "calls" in msg.tool_trace:
-                    sig = "skip_thought_signature_validator" if (
-                                use_dummy_signatures or not msg.thought_signature) else msg.thought_signature
+            # 2. MODEL CALL TURN (If tools were used)
+            if msg.tool_trace and "calls" in msg.tool_trace:
+                sig = "skip_thought_signature_validator" if (
+                        use_dummy_signatures or not msg.thought_signature) else msg.thought_signature
 
-                    history.append(types.Content(
-                        role="model",
-                        parts=[
-                            types.Part(
-                                thought_signature=sig,
-                                function_call=types.FunctionCall(name=c["name"], args=c["args"])
-                            ) for c in msg.tool_trace["calls"]
-                        ]
-                    ))
+                history.append(types.Content(
+                    role="model",
+                    parts=[
+                        types.Part(
+                            thought_signature=sig,
+                            function_call=types.FunctionCall(name=c["name"], args=c["args"])
+                        ) for c in msg.tool_trace["calls"]
+                    ]
+                ))
 
+                # 3. TOOL RESPONSE TURN (Must follow the call immediately)
                 if "responses" in msg.tool_trace:
                     history.append(types.Content(
                         role="tool",
@@ -230,7 +238,7 @@ class GeminiManager:
                         ]
                     ))
 
-            # C. Model final text response
+            # 4. MODEL FINAL TEXT (The answer to the user)
             if msg.llm_response:
                 history.append(types.Content(role="model", parts=[types.Part(text=msg.llm_response)]))
 

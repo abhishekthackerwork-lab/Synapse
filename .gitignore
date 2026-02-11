@@ -4,11 +4,25 @@
 *
 
 # -----------------------------
-# Allow app source code ONLY
+# Allow app (Backend) source
 # -----------------------------
 !app/
 !app/**
 
+# -----------------------------
+# Allow client (Frontend) source
+# -----------------------------
+!client/
+!client/**
+
+# -----------------------------
+# Explicit Frontend Ignores
+# -----------------------------
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+client/.eslintcache
 # -----------------------------
 # Allow repo essentials
 # -----------------------------
@@ -20,9 +34,10 @@
 !requirements.txt
 !SETUP.md
 !app-policy.hcl
+!LICENSE
 
 # -----------------------------
-# Explicit safety ignores
+# Explicit safety ignores (Global)
 # -----------------------------
 alembic/
 .env*
@@ -30,6 +45,8 @@ vault/
 vault-config/
 postgres_data/
 qdrant_data/
+temp_uploads/
 __pycache__/
 *.pyc
 *.log
+.DS_Store

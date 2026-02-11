@@ -32,4 +32,21 @@ Once the engines are configured, we need to create a "Bridge" that allows the ap
     - Retrieve Credentials: Run the Vault commands to generate your VAULT_ROLE_ID and VAULT_SECRET_ID and place them inside the env file.
 ---
 
+## Frontend Setup
+
+Prerequisites:
+    - Node.js (v18 or higher)
+    - npm
+
+Installation steps:
+1. Navigate to Client "cd client"
+
+2. install dependencies inside the client directory using "npm install
+3. Configure environment variables:
+    - Create a .env file in the frontend root and add this variable:
+    - VITE_API_URL=http://localhost:8000/api/v1
+4. Start the development server using "npm run dev"
+
+
+
 ### And with that, the set-up for this project is complete.
