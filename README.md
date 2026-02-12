@@ -6,6 +6,10 @@ The system is built as a hardened core where AI capabilities—such as Retrieval
 
 ---
 
+### Demo video available on linkedIn (Link in profile)
+
+---
+
 ## 🚀 Key Capabilities
 
 ### 1. Advanced AI & Agentic Integration
