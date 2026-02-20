@@ -50,3 +50,4 @@ __pycache__/
 *.pyc
 *.log
 .DS_Store
+/app/embedding_models/

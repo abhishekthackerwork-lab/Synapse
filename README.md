@@ -1,5 +1,3 @@
-# Synapse
-
 **Synapse** 
 is a production-oriented async backend system designed to demonstrate transactional integrity, strict system boundaries, and least-privilege security. AI-features such as RAG and tool-calling are implemented as modular extensions over an ACID-compliant PostgreSQL core.
 ---
@@ -46,16 +44,29 @@ Built with the principle of least exposure, leveraging **HashiCorp Vault** for a
 
 ---
 
-## 🛠️ Tech Stack
 
-- **API**: Async FastAPI
-- **Database**: PostgreSQL (async SQLAlchemy 2.0 + Alembic)
-- **Secrets Management**: HashiCorp Vault (KV v2, AppRole, Transit)
-- **Vector Database**: Qdrant
-- **AI Integration**: Google Gemini 3.0, Google Genai Python Sdk
-- **Security**: Argon2id (Hashing), JWT (Vault-signed)
-- **Infra**: Docker-based local development
 
+### Tech Stack
+
+Backend:
+- FastAPI
+- PostgreSQL
+- SQLAlchemy 2.0 + Alembic
+- HashiCorp Vault
+- Qdrant
+
+AI:
+- Google Gemini 2.5/3.0
+- Google GenAI Python SDK
+
+Frontend:
+- React 19
+- TypeScript
+- Vite 7
+- Tailwind CSS 4
+
+Runtime:
+- Docker
 ---
 ## License
 MIT LICENSE
